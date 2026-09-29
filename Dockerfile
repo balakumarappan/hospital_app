@@ -13,6 +13,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-server ./dist-server
 COPY --from=build /app/server/schema.sql ./server/schema.sql
+COPY render-start.sh ./render-start.sh
 EXPOSE 3001
 USER node
 CMD ["node", "dist-server/index.js"]

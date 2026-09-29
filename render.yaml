@@ -8,10 +8,7 @@ services:
     plan: free
     region: singapore
     healthCheckPath: /api/health
-    dockerCommand: >-
-      sh -c 'node dist-server/migrate.js &&
-      if [ -n "$ADMIN_PASSWORD" ]; then STAFF_PASSWORD="$ADMIN_PASSWORD" node dist-server/create-staff.js admin "Hospital Admin" admin; fi &&
-      node dist-server/index.js'
+    dockerCommand: sh render-start.sh
     envVars:
       - key: NODE_ENV
         value: production
