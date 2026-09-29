@@ -1,0 +1,48 @@
+{
+  "name": "rural-hospital-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "tsx watch server/index.ts",
+    "dev:web": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build && esbuild server/index.ts server/migrate.ts server/create-staff.ts --bundle --platform=node --format=esm --packages=external --outdir=dist-server",
+    "start": "node dist-server/index.js",
+    "db:migrate": "tsx server/migrate.ts",
+    "db:migrate:prod": "node dist-server/migrate.js",
+    "staff:create": "tsx server/create-staff.ts",
+    "staff:create:prod": "node dist-server/create-staff.js",
+    "test": "node --import tsx --test server/*.test.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.900.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "csv-parse": "^6.1.0",
+    "dotenv": "^18.0.4",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.8.1",
+    "@types/pg": "^8.15.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "concurrently": "^9.2.1",
+    "esbuild": "^0.25.12",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9"
+  }
+}
