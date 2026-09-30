@@ -5,7 +5,14 @@ export function validDate(value: string): boolean {
   const date = new Date(value + 'T12:00:00Z');
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
-export function todayIndia(): string { return new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
+export function todayIndia(now=new Date()): string { return new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(now); }
+export function futureSlot(date:string,time:string,now=new Date()):boolean {
+  const today=todayIndia(now);
+  if(date>today)return true;
+  if(date<today)return false;
+  const current=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+  return time>current;
+}
 export function visits(d: Doctor, date: string): boolean {
   if (!d.active || !validDate(date)) return false;
   const dt = new Date(date + 'T12:00:00Z');

@@ -20,6 +20,8 @@ services:
         generateValue: true
       - key: SMS_PROVIDER
         value: demo
+      - key: SEED_DEMO_DATA
+        value: "true"   # sample doctors, patients and appointments; set to false to skip
       - key: PUBLIC_ORIGIN
         sync: false   # e.g. https://rural-hospital-app.onrender.com (no trailing slash)
       - key: ADMIN_PASSWORD

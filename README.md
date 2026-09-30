@@ -1,4 +1,4 @@
-# Rural Hospital App
+# Velavan Hospital App
 
 Responsive patient and hospital-desk application backed by PostgreSQL. The QR code should point to the eventual HTTPS address, for example `https://appointments.hospital.example/`. The app has no on-site server requirement.
 
@@ -17,11 +17,10 @@ Requires Node.js 24+, npm, and PostgreSQL 16+ (Docker Compose file included wher
 1. `npm ci`
 2. Start PostgreSQL with `docker compose up -d db`, or point `DATABASE_URL` to an existing PostgreSQL instance.
 3. Copy `.env.example` to `.env`. Set `DATABASE_URL` and a random `SESSION_SECRET` of at least 32 characters. Keep `SMS_PROVIDER=console` for **local development only**; codes appear in the API terminal.
-4. `npm run db:migrate`
-5. Create an admin account with `STAFF_PASSWORD='<strong password>' npm run staff:create -- admin 'Hospital Admin' admin`. Create reception accounts with role `reception`.
-6. `npm run dev`; visit `http://localhost:5173`. Add doctors under **Hospital desk → Doctors & schedules** before patient bookings.
+4. `npm run dev` automatically migrates the schema and seeds the initial administrator and sample data before starting the app. On its **first run**, it prints the generated admin database ID, username (`velavan.admin` by default), and a random password. Store the password securely; rerunning the seed will not change it or print it again.
+5. Visit `http://localhost:5173`. The three sample doctors demonstrate daily, Tuesday-only, and 15th-of-the-month schedules. Four sample patients share two mobile numbers (`9000000001`, `9000000002`), one sample patient has no mobile number, and there are three sample appointments. With `SMS_PROVIDER=console`, the local OTP appears in the API terminal. Create a reception account when needed with `STAFF_PASSWORD='<strong password>' npm run staff:create -- reception 'Reception User' reception`.
 
-`npm run build` compiles the browser and API, and `npm test` checks date and slot rules. In production use `npm run db:migrate:prod` as a **one-off job** before launching `npm start`.
+`npm run build` compiles the browser and API, and `npm test` checks date and slot rules. In production, set `SEED_ADMIN_PASSWORD` through a secret store and run `npm run db:setup:prod` as a **one-off job** before launching `npm start`. Production setup creates the administrator but skips sample records by default. Set `SEED_DEMO_DATA=true` only in a nonclinical demo environment. The setup is idempotent: it preserves edited records and an existing administrator password.
 
 ## CSV import
 
@@ -38,7 +37,7 @@ flowchart TB
     E --> L[CloudWatch logs]
 ```
 
-1. Build the supplied `Dockerfile`, push its image to ECR, and run one-off database migration and staff-creation tasks using that image. Run the API as an ECS Fargate service behind an HTTPS ALB; the container serves both the compiled UI and `/api` on port 3001.
+1. Build the supplied `Dockerfile`, push its image to ECR, and run a one-off `npm run db:setup:prod` task using that image. Run the API as an ECS Fargate service behind an HTTPS ALB; the container serves both the compiled UI and `/api` on port 3001.
 2. Place RDS PostgreSQL in private subnets, permit port 5432 from only the ECS security group, enable encryption, automated backups, and point `DATABASE_URL` at it. Set `DATABASE_SSL=true` and configure the trusted RDS root certificate in the container for your region before using a TLS database connection.
 3. Store `DATABASE_URL`, `SESSION_SECRET` and staff bootstrap secrets in AWS Secrets Manager; provide them to one-off tasks / ECS at runtime. Set `PUBLIC_ORIGIN` to the exact HTTPS app origin, `SMS_PROVIDER=aws`, and `AWS_REGION=ap-south-1` (or the chosen region). Give the ECS task role only the SMS publish permission it needs. The SMS sender ID and message template require India's DLT registration when using a local route.
 4. Attach WAF rate controls to the ALB, restrict public ingress to HTTPS, and route `/api/health` for health checks. Set logs/metrics and alarms for API errors and database capacity. Size the task and RDS instance for expected load. The admin interface exposes the final patient QR code after `PUBLIC_ORIGIN` is set; print that code at reception.
