@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import { randomBytes } from 'node:crypto';
 import { db, transaction } from './db.ts';
 
-const adminUsername = process.env.SEED_ADMIN_USERNAME?.trim() || 'velavan.admin';
+const adminUsername = process.env.SEED_ADMIN_USERNAME?.trim() || 'admin';
 const production = process.env.NODE_ENV === 'production';
 const demoData = !production || process.env.SEED_DEMO_DATA === 'true';
 
@@ -34,8 +33,10 @@ const existing = await db.query('SELECT id FROM staff WHERE username=$1', [admin
 if (!existing.rowCount && production && (!process.env.SEED_ADMIN_PASSWORD || process.env.SEED_ADMIN_PASSWORD.length < 12)) {
   throw new Error('Set SEED_ADMIN_PASSWORD (at least 12 characters) before creating the production administrator');
 }
-const password = process.env.SEED_ADMIN_PASSWORD || randomBytes(24).toString('base64url');
-if (!existing.rowCount && password.length < 12) throw new Error('SEED_ADMIN_PASSWORD must contain at least 12 characters');
+const password = process.env.SEED_ADMIN_PASSWORD || 'admin';
+if (!existing.rowCount && process.env.SEED_ADMIN_PASSWORD && password.length < 12) {
+  throw new Error('SEED_ADMIN_PASSWORD must contain at least 12 characters');
+}
 const hash = !existing.rowCount ? await bcrypt.hash(password, 12) : null;
 
 const newAdmin = await transaction(async client => {
